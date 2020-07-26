@@ -23,7 +23,7 @@ def main():
         print('func: No arguments required')
         sys.exit(1)
     else:
-        funclib.core.run()
+        funclib.core().run()
 
 if __name__ == '__main__':
     main()
