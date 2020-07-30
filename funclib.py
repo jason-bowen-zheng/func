@@ -7,6 +7,8 @@ except:
     print("func: No 'readline' found")
 import shlex
 import string
+import sympy as sym
+import sympy.abc as var
 import sys
 
 class core(object):
@@ -15,6 +17,7 @@ class core(object):
         self.var = {}
         self.function = {
                     'ipf': ipf,
+                    'ppf': ppf,
                 }
         self.version = '0.1'
 
@@ -81,6 +84,8 @@ class ipf(object):
     # Inverse proportional function
 
     def __init__(self, *args):
+        # ipf <k>
+        # ipf <x> <y>
         if len(args) == 1:
             if (num := float(args[0])) != 0:
                 self.k = num
@@ -102,3 +107,33 @@ class ipf(object):
 
     def gety(self, x):
         return self.k / float(x)
+
+
+class ppf(object):
+    # Positive proportional function
+
+    def __init__(self, *args):
+        # ppf <k>
+        # ppf <x> <y>
+        if len(args) == 1:
+            if (num := float(args[0])) != 0:
+                self.k = num
+            else:
+                raise TypeError("'k' cannot equals to 0")
+        elif len(args) == 2:
+            if float(args[0]) != 0:
+                self.k = float(args[1]) / float(args[0])
+            else:
+                raise TypeError("'x' cannot equals to 0")
+        else:
+            raise TypeError("Function 'ppf' needs 1 to 2 arguments but %d found" % len(args))
+
+    def __str__(self):
+        return 'ppf(' + str(self.k) + ')'
+
+    def getx(self, y):
+        return float(y) / self.k
+
+    def gety(self, x):
+        return self.k * float(x)
+
