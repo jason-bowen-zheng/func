@@ -22,11 +22,21 @@ class core(object):
         if name in string.ascii_letters:
             if type_ in self.function:
                 self.var[name] = self.function[type_](*args)
-                print(self.var[name])
+                print(name, '=', self.var[name])
             else:
                 raise TypeError("No function type: '%s'" % type_)
         else:
             raise TypeError("Invalid name: '%s'" % name)
+
+    def getx(self, name, y):
+        print('x =', self.var[name].getx(y))
+
+    def gety(self, name, x):
+        print('y =', self.var[name].gety(x))
+
+    def ls(self):
+        for k, v in self.var.items():
+            print(k, '=', str(v))
 
     def run(self):
         print('func %s' % self.version)
@@ -47,6 +57,12 @@ class core(object):
                         pass
                     elif cmd[0] == 'define':
                         self.define(*cmd[1:])
+                    elif cmd[0] == 'getx':
+                        self.getx(*cmd[1:])
+                    elif cmd[0] == 'gety':
+                        self.gety(*cmd[1:])
+                    elif cmd[0] == 'ls':
+                        self.ls(*cmd[1:])
                     elif cmd[0] == 'quit':
                         self.quit(*cmd[1:])
                     else:
@@ -59,6 +75,7 @@ class core(object):
     def quit(self, code=0):
         sys.exit(int(code))
 
+# class of functions
 
 class ipf(object):
     # Inverse proportional function
@@ -76,6 +93,9 @@ class ipf(object):
                 raise TypeError("'k' cannot equals to 0")
         else:
             raise TypeError("Function 'ipf' needs 1 to 2 arguments but %d found" % len(args))
+
+    def __str__(self):
+        return 'ipf(' + str(self.k) + ')'
 
     def getx(self, y):
         return self.k / float(y)
