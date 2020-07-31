@@ -17,6 +17,7 @@ class core(object):
         self.var = {}
         self.function = {
                     'ipf': ipf,
+                    'lf' : lf,
                     'ppf': ppf,
                 }
         self.version = '0.1'
@@ -116,14 +117,25 @@ class lf(object):
         # lf <x1> <y1> <x2> <y2>
         if len(args) == 2:
             self.k = float(args[0])
-            self.b = float(args[1])
+            if self.k == 0:
+                raise TypeError("'k' cannot equals to 0")
+            else:
+                self.b = float(args[1])
         elif len(args) == 4:
-            pass
+            k, b = sym.Symbol('k'), sym.Symbol('b')
+            ans = sym.solve([k * float(args[0]) + b - float(args[1]), k * float(args[2]) + b - float(args[3])], [k, b])
+            self.k, self.b = ans[k], ans[b]
         else:
             raise TypeError("Function 'lf' needs 2 or 4 arguments but %d found" % len(args))
     
     def __str__(self):
         return 'lf(' + str(self.k) + ', ' + str(self.b) +  ')'
+
+    def getx(self, y):
+        return (float(y) - self.b) / self.k
+
+    def gety(self, x):
+        return self.k * float(x) + self.b
 	
 	
 class ppf(object):
