@@ -109,21 +109,21 @@ class ipf(object):
         return self.k / float(x)
 
 class lf(object):
-	# Linear function
-	
-	def __init__(self, *args):
-		# lf <k> <b>
-		# lf <x1> <y1> <x2> <y2>
-		if len(args) == 2:
-			self.k = float(args[0])
-			self.b = float(args[1])
-		elif len(args) == 4:
-			pass
-		else:
-			raise TypeError("Function 'lf' needs 2 or 4 arguments but %d found" % len(args))
-	
-	def __str__(self):
-		return 'lf(' + str(self.k) + ', ' + str(self.b) +  ')'
+    # Linear function
+        
+    def __init__(self, *args):
+        # lf <k> <b>
+        # lf <x1> <y1> <x2> <y2>
+        if len(args) == 2:
+            self.k = float(args[0])
+            self.b = float(args[1])
+        elif len(args) == 4:
+            pass
+        else:
+            raise TypeError("Function 'lf' needs 2 or 4 arguments but %d found" % len(args))
+    
+    def __str__(self):
+        return 'lf(' + str(self.k) + ', ' + str(self.b) +  ')'
 	
 	
 class ppf(object):
