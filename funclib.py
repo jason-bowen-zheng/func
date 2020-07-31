@@ -22,7 +22,7 @@ class core(object):
                 }
         self.version = '0.1'
 
-    def define(self, type_, name, *args):
+    def def_(self, type_, name, *args):
         if name in string.ascii_letters:
             if type_ in self.function:
                 self.var[name] = self.function[type_](*args)
@@ -31,6 +31,9 @@ class core(object):
                 raise TypeError("No function type: '%s'" % type_)
         else:
             raise TypeError("Invalid name: '%s'" % name)
+
+    def getq(self, name):
+        print('In', ', '.join([str(item) for item in self.var[name].getq()]), 'quadrants')
 
     def getx(self, name, y):
         print('x =', self.var[name].getx(y))
@@ -59,8 +62,10 @@ class core(object):
                     cmd = shlex.split(cmd)
                     if cmd == []:
                         pass
-                    elif cmd[0] == 'define':
-                        self.define(*cmd[1:])
+                    elif cmd[0] == 'def':
+                        self.def_(*cmd[1:])
+                    elif cmd[0] == 'getq':
+                        self.getq(*cmd[1:])
                     elif cmd[0] == 'getx':
                         self.getx(*cmd[1:])
                     elif cmd[0] == 'gety':
@@ -69,6 +74,8 @@ class core(object):
                         self.ls(*cmd[1:])
                     elif cmd[0] == 'quit':
                         self.quit(*cmd[1:])
+                    elif cmd[0] == 'undef':
+                        self.undef(*cmd[1:])
                     else:
                         print("func: Command not found:", cmd[0])
                 except Exception as err:
@@ -78,6 +85,10 @@ class core(object):
 
     def quit(self, code=0):
         sys.exit(int(code))
+
+    def undef(self, *names):
+        for name in names:
+            del self.var[name]
 
 # class of functions
 
@@ -103,6 +114,12 @@ class ipf(object):
     def __str__(self):
         return 'ipf(' + str(self.k) + ')'
 
+    def getq(self):
+        if self.k > 0:
+            return [1, 3]
+        elif self.k < 0:
+            return [2, 4]
+
     def getx(self, y):
         return self.k / float(y)
 
@@ -122,17 +139,39 @@ class lf(object):
                 raise TypeError("'x' cannot equals to 0")
             self.b = float(args[1])
         elif len(args) == 4:
-            k, b = sym.Symbol('k'), sym.Symbol('b')
-            ans = sym.solve([k * float(args[0]) + b - float(args[1]), k * float(args[2]) + b - float(args[3])], [k, b])
-            self.k, self.b = ans[k], ans[b]
+            x1, y1 = float(args[0]), float(args[1])
+            x2, y2 = float(args[2]), float(args[3])
+            eq1 = sym.Eq(var.k * x1 + var.b, y1)
+            eq2 = sym.Eq(var.k * x2 + var.b, y2)
+            ans = sym.solve([eq1, eq2], [var.k, var.b])
+            self.k, self.b = ans[var.k], ans[var.b]
         else:
             raise TypeError("Function 'lf' needs 2 or 4 arguments but %d found" % len(args))
     
     def __str__(self):
         return 'lf(' + str(self.k) + ', ' + str(self.b) +  ')'
 
-    def getquadrant(self):
-        pass
+    def getq(self):
+        quadrant = []
+        if self.k > 0:
+            quadrant += [1, 3]
+            if self.b > 0:
+                quadrant += [2]
+            elif self.b < 0:
+                quadrant += [4]
+            else:
+                pass
+        elif self.k < 0:
+            quadrant += [2, 4]
+            if self.b > 0:
+                quadrant += [3]
+            elif self.b < 0:
+                quadrant += [1]
+            else:
+                pass
+        else:
+            pass
+        return quadrant
 
     def getx(self, y):
         return (float(y) - self.b) / self.k
@@ -162,6 +201,12 @@ class ppf(object):
 
     def __str__(self):
         return 'ppf(' + str(self.k) + ')'
+
+    def getq(self):
+        if self.k > 0:
+            return [1, 3]
+        elif self.k < 0:
+            return [2, 4]
 
     def getx(self, y):
         return float(y) / self.k
