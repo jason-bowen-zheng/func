@@ -116,11 +116,11 @@ class lf(object):
         # lf <k> <b>
         # lf <x1> <y1> <x2> <y2>
         if len(args) == 2:
-            self.k = float(args[0])
-            if self.k == 0:
-                raise TypeError("'k' cannot equals to 0")
+            if (num := float(args[0])) != 0:
+                self.k = float(args[0])
             else:
-                self.b = float(args[1])
+                raise TypeError("'x' cannot equals to 0")
+            self.b = float(args[1])
         elif len(args) == 4:
             k, b = sym.Symbol('k'), sym.Symbol('b')
             ans = sym.solve([k * float(args[0]) + b - float(args[1]), k * float(args[2]) + b - float(args[3])], [k, b])
@@ -130,6 +130,9 @@ class lf(object):
     
     def __str__(self):
         return 'lf(' + str(self.k) + ', ' + str(self.b) +  ')'
+
+    def getquadrant(self):
+        pass
 
     def getx(self, y):
         return (float(y) - self.b) / self.k
