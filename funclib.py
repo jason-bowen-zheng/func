@@ -32,6 +32,11 @@ class core(object):
         else:
             raise TypeError("Invalid name: '%s'" % name)
 
+    def getip(self, f1, f2):
+        ans = sym.solve([self.var[f1].geteq(), self.var[f2].geteq()], [var.x, var.y])
+        for item in ans:
+            print(item)
+
     def getq(self, name):
         print('In', ', '.join([str(item) for item in self.var[name].getq()]), 'quadrants')
 
@@ -46,12 +51,10 @@ class core(object):
             print(k, '=', str(v))
 
     def run(self):
-        print('func %s' % self.version)
-        print('Copyright (c) Jason Zheng 2020.')
-        print('All Right Reserved.')
+        print('func %s for %s' % (self.version, sys.platform))
         while True:
             try:
-                cmd = input('> ')
+                cmd = input('>>> ')
             except KeyboardInterrupt:
                 print('\nfunc: Interrupt')
             except EOFError:
@@ -64,6 +67,8 @@ class core(object):
                         pass
                     elif cmd[0] == 'def':
                         self.def_(*cmd[1:])
+                    elif cmd[0] == 'getip':
+                        self.getip(*cmd[1:])
                     elif cmd[0] == 'getq':
                         self.getq(*cmd[1:])
                     elif cmd[0] == 'getx':
@@ -109,10 +114,13 @@ class ipf(object):
             else:
                 raise TypeError("'k' cannot equals to 0")
         else:
-            raise TypeError("Function 'ipf' needs 1 to 2 arguments but %d found" % len(args))
+            raise TypeError("Function 'ipf' takes 1 to 2 arguments but %d given" % len(args))
 
     def __str__(self):
         return 'ipf(' + str(self.k) + ')'
+
+    def geteq(self):
+        return sym.Eq(self.k / var.x, var.y)
 
     def getq(self):
         if self.k > 0:
@@ -144,12 +152,17 @@ class lf(object):
             eq1 = sym.Eq(var.k * x1 + var.b, y1)
             eq2 = sym.Eq(var.k * x2 + var.b, y2)
             ans = sym.solve([eq1, eq2], [var.k, var.b])
+            if ans[var.k] == 0:
+                raise TypeError("'k' cannot equals to 0")
             self.k, self.b = ans[var.k], ans[var.b]
         else:
-            raise TypeError("Function 'lf' needs 2 or 4 arguments but %d found" % len(args))
+            raise TypeError("Function 'lf' takes 2 or 4 arguments but %d given" % len(args))
     
     def __str__(self):
         return 'lf(' + str(self.k) + ', ' + str(self.b) +  ')'
+
+    def geteq(self):
+        return sym.Eq(self.k * var.x + self.b, var.y)
 
     def getq(self):
         quadrant = []
@@ -197,10 +210,13 @@ class ppf(object):
             else:
                 raise TypeError("'x' cannot equals to 0")
         else:
-            raise TypeError("Function 'ppf' needs 1 to 2 arguments but %d found" % len(args))
+            raise TypeError("Function 'ppf' takes 1 to 2 arguments but %d given" % len(args))
 
     def __str__(self):
         return 'ppf(' + str(self.k) + ')'
+
+    def geteq(self):
+        return sym.Eq(self.k * var.x, var.y)
 
     def getq(self):
         if self.k > 0:
