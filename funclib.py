@@ -16,6 +16,7 @@ class core(object):
     def __init__(self):
         self.var = {}
         self.function = {
+                    'cvf': cvf,
                     'ipf': ipf,
                     'lf' : lf,
                     'ppf': ppf,
@@ -34,8 +35,11 @@ class core(object):
 
     def getip(self, f1, f2):
         ans = sym.solve([self.var[f1].geteq(), self.var[f2].geteq()], [var.x, var.y])
-        for item in ans:
-            print(item)
+        if isinstance(ans, list):
+            for item in ans:
+                print(item)
+        elif isinstance(ans, dict):
+            print('(' + str(ans[var.x]) + ', ' + str(ans[var.y]) + ')')
 
     def getq(self, name):
         print('In', ', '.join([str(item) for item in self.var[name].getq()]), 'quadrants')
@@ -96,6 +100,38 @@ class core(object):
             del self.var[name]
 
 # class of functions
+
+class cvf(object):
+    #Constant value function
+
+    def __init__(self, *args):
+        #cvf <c>
+        if len(args) == 1:
+            if (num := float(args[0])) != 0:
+                self.c = num
+            else:
+                raise TypeError("'c' cannot equals to 0")
+        else:
+            raise TypeError("Funcation 'cvf' takes 1 argument but %d given" % len(args))
+
+    def __str__(self):
+        return 'cvf(' + str(self.c) + ')'
+
+    def geteq(self):
+        return sym.Eq(self.c, var.y)
+
+    def getq(self):
+        if self.c > 0:
+            return [1, 2]
+        elif self.c < 0:
+            return [3, 4]
+
+    def getx(self, y):
+        pass
+
+    def gety(self, x):
+        return self.c
+
 
 class ipf(object):
     # Inverse proportional function
