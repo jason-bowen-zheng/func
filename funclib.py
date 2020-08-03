@@ -54,6 +54,12 @@ class core(object):
         for k, v in self.var.items():
             print(k, '=', str(v))
 
+    def plot(self, f):
+        self.var[f].plot()
+
+    def quit(self, code=0):
+        sys.exit(int(code))
+
     def run(self):
         print('func %s for %s' % (self.version, sys.platform))
         while True:
@@ -81,6 +87,8 @@ class core(object):
                         self.gety(*cmd[1:])
                     elif cmd[0] == 'ls':
                         self.ls(*cmd[1:])
+                    elif cmd[0] == 'plot':
+                        self.plot(*cmd[1:])
                     elif cmd[0] == 'quit':
                         self.quit(*cmd[1:])
                     elif cmd[0] == 'undef':
@@ -91,9 +99,6 @@ class core(object):
                     print('func:', str(err))
                 else:
                     pass
-
-    def quit(self, code=0):
-        sys.exit(int(code))
 
     def undef(self, *names):
         for name in names:
@@ -170,6 +175,9 @@ class ipf(object):
     def gety(self, x):
         return self.k / float(x)
 
+    def plot(self):
+        sym.plotting.plot(self.k / var.x)
+
 class lf(object):
     # Linear function
         
@@ -227,6 +235,9 @@ class lf(object):
 
     def gety(self, x):
         return self.k * float(x) + self.b
+
+    def plot(self):
+        sym.plotting.plot(self.k * var.x + self.b)
 	
 	
 class ppf(object):
@@ -265,4 +276,7 @@ class ppf(object):
 
     def gety(self, x):
         return self.k * float(x)
+
+    def plot(self):
+        sym.plotting.plot(self.k * var.x)
 
