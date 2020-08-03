@@ -137,6 +137,9 @@ class cvf(object):
     def gety(self, x):
         return self.c
 
+    def plot(self):
+        sym.plotting.plot(self.c)
+
 
 class ipf(object):
     # Inverse proportional function
