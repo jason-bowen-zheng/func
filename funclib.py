@@ -4,7 +4,7 @@
 try:
     import readline
 except:
-    print("func: No 'readline' found")
+    pass
 import shlex
 import string
 import sympy as sym
@@ -18,7 +18,7 @@ class core(object):
         self.function = {
                     'cvf': cvf,
                     'ipf': ipf,
-                    'lf' : lf,
+                    'lf' : lf ,
                     'ppf': ppf,
                 }
         self.version = '0.1'
@@ -26,7 +26,8 @@ class core(object):
     def def_(self, type_, name, *args):
         if name in string.ascii_letters:
             if type_ in self.function:
-                self.var[name] = self.function[type_](*args)
+                [float(sym.sympify(item)) for item in args]
+                self.var[name] = self.function[type_](*[sym.sympify(item) for item in args])
                 print(name, '=', self.var[name])
             else:
                 raise TypeError("No function type: '%s'" % type_)
@@ -50,9 +51,19 @@ class core(object):
     def gety(self, name, x):
         print('y =', self.var[name].gety(x))
 
-    def ls(self):
-        for k, v in self.var.items():
-            print(k, '=', str(v))
+    def ls(self, type_='f'):
+        if type_ == 'f':
+            i = 1
+            for k, v in self.var.items():
+                print('%s) %s = %s' % (str(i).rjust(len(str(len(self.var))), ' '), k, str(v)))
+                i += 1
+        elif type_ == 't':
+            i = 1
+            for item in self.function:
+                print('%s: %s' % (str(i).rjust(len(str(len(self.function))), ' '), item))
+                i += 1
+        else:
+            raise TypeError("No subcommand : '%s'" % type_)
 
     def plot(self, f):
         self.var[f].plot()
@@ -93,6 +104,8 @@ class core(object):
                         self.quit(*cmd[1:])
                     elif cmd[0] == 'undef':
                         self.undef(*cmd[1:])
+                    elif cmd[0] == 'using':
+                        self.using(*cmd[1:])
                     else:
                         print("func: Command not found:", cmd[0])
                 except Exception as err:
@@ -104,7 +117,9 @@ class core(object):
         for name in names:
             del self.var[name]
 
-# class of functions
+    def using(self, lib):
+        pass
+
 
 class cvf(object):
     #Constant value function
@@ -112,8 +127,8 @@ class cvf(object):
     def __init__(self, *args):
         #cvf <c>
         if len(args) == 1:
-            if (num := float(args[0])) != 0:
-                self.c = num
+            if float(args[0]) != 0:
+                self.c = args[0]
             else:
                 raise TypeError("'c' cannot equals to 0")
         else:
@@ -148,13 +163,13 @@ class ipf(object):
         # ipf <k>
         # ipf <x> <y>
         if len(args) == 1:
-            if (num := float(args[0])) != 0:
-                self.k = num
+            if float(args[0]) != 0:
+                self.k = args[0]
             else:
                 raise TypeError("'k' cannot equals to 0")
         elif len(args) == 2:
-            if (num := float(args[0]) * float(args[1])) != 0:
-                self.k = num
+            if float(args[0]) * float(args[1]) != 0:
+                self.k = args[0] * args[1]
             else:
                 raise TypeError("'k' cannot equals to 0")
         else:
@@ -181,6 +196,7 @@ class ipf(object):
     def plot(self):
         sym.plotting.plot(self.k / var.x)
 
+
 class lf(object):
     # Linear function
         
@@ -188,20 +204,21 @@ class lf(object):
         # lf <k> <b>
         # lf <x1> <y1> <x2> <y2>
         if len(args) == 2:
-            if (num := float(args[0])) != 0:
-                self.k = float(args[0])
+            if float(args[0]) != 0:
+                self.k = args[0]
+                self.b = args[1]
             else:
                 raise TypeError("'x' cannot equals to 0")
-            self.b = float(args[1])
         elif len(args) == 4:
-            x1, y1 = float(args[0]), float(args[1])
-            x2, y2 = float(args[2]), float(args[3])
+            x1, y1 = args[0], args[1]
+            x2, y2 = args[2], args[3]
             eq1 = sym.Eq(var.k * x1 + var.b, y1)
             eq2 = sym.Eq(var.k * x2 + var.b, y2)
             ans = sym.solve([eq1, eq2], [var.k, var.b])
             if ans[var.k] == 0:
                 raise TypeError("'k' cannot equals to 0")
-            self.k, self.b = ans[var.k], ans[var.b]
+            else:
+                self.k, self.b = ans[var.k], ans[var.b]
         else:
             raise TypeError("Function 'lf' takes 2 or 4 arguments but %d given" % len(args))
     
@@ -241,8 +258,8 @@ class lf(object):
 
     def plot(self):
         sym.plotting.plot(self.k * var.x + self.b)
-	
-	
+
+
 class ppf(object):
     # Positive proportional function
 
@@ -250,13 +267,13 @@ class ppf(object):
         # ppf <k>
         # ppf <x> <y>
         if len(args) == 1:
-            if (num := float(args[0])) != 0:
-                self.k = num
+            if float(args[0]) != 0:
+                self.k = args[0]
             else:
                 raise TypeError("'k' cannot equals to 0")
         elif len(args) == 2:
             if float(args[0]) != 0:
-                self.k = float(args[1]) / float(args[0])
+                self.k = args[1] / args[0]
             else:
                 raise TypeError("'x' cannot equals to 0")
         else:
