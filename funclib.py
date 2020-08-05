@@ -118,7 +118,17 @@ class core(object):
             del self.var[name]
 
     def using(self, lib):
-        pass
+        lib = __import__(lib)
+        for item in [name for name in dir(lib) if not name.startswith('_')]:
+            name, f = item, getattr(lib, item)
+            if isinstance(f, object):
+                if hasattr(f, 'geteq') and hasattr(f, 'getx') and hasattr(f, 'gety') and hasattr(f, 'plot'):
+                    print("Loading function :'%s'" % name)
+                    self.function[name] = f
+                else:
+                    pass
+            else:
+                pass
 
 
 class cvf(object):
