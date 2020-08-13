@@ -6,7 +6,7 @@
 
 请先安装 sympy 依赖项:
 ```shell
-pip install -U sympy
+sudo pip install -r requirements.txt
 ```
 
 # func 支持哪些初等函数
