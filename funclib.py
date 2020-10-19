@@ -1,6 +1,7 @@
 # func/funclib.py
 # func runtime lib
 
+import math
 try:
     import readline
 except:
@@ -109,7 +110,7 @@ class core(object):
                     else:
                         print("func: Command not found:", cmd[0])
                 except Exception as err:
-                    print('func:', str(err))
+                    print('func: error:', str(err))
                 else:
                     pass
 
