@@ -21,6 +21,7 @@ class core(object):
                     'ipf': ipf,
                     'lf' : lf ,
                     'ppf': ppf,
+                    'qf' : qf
                 }
         self.version = '0.1'
 
@@ -136,7 +137,6 @@ class cvf(object):
     #Constant value function
 
     def __init__(self, *args):
-        #cvf <c>
         if len(args) == 1:
             if float(args[0]) != 0:
                 self.c = args[0]
@@ -171,8 +171,6 @@ class ipf(object):
     # Inverse proportional function
 
     def __init__(self, *args):
-        # ipf <k>
-        # ipf <x> <y>
         if len(args) == 1:
             if float(args[0]) != 0:
                 self.k = args[0]
@@ -212,8 +210,6 @@ class lf(object):
     # Linear function
         
     def __init__(self, *args):
-        # lf <k> <b>
-        # lf <x1> <y1> <x2> <y2>
         if len(args) == 2:
             if float(args[0]) != 0:
                 self.k = args[0]
@@ -275,8 +271,6 @@ class ppf(object):
     # Positive proportional function
 
     def __init__(self, *args):
-        # ppf <k>
-        # ppf <x> <y>
         if len(args) == 1:
             if float(args[0]) != 0:
                 self.k = args[0]
@@ -311,3 +305,34 @@ class ppf(object):
     def plot(self):
         sym.plotting.plot(self.k * var.x)
 
+
+class qf(object):
+    # Quadratic function
+
+    def __init__(self, *args):
+        if len(args) == 1:
+            if float(args[0]) != 0:
+                self.a = args[0]
+                self.b = self.c = 0.0
+            else:
+                raise TypeError("'a' cannot equals to 0")
+        elif len(args) == 2:
+            if float(args[0]) != 0:
+                self.a = args[0]
+                self.b = 0
+                self.c = args[1]
+            else:
+                raise TypeError("'a' cannot equals to 0")
+        elif len(args) == 3:
+            if float(args[0]) != 0:
+                self.a = args[0]
+                self.b = args[1]
+                self.c = args[2]
+            else:
+                raise TypeError("'a' cannot equals to 0")
+
+        else:
+            raise TypeError("Function 'qf' takes 1, 2, or 3 arguments but %d given" % len(args))
+
+    def __str__(self):
+        return 'qf(' + str(self.a) + ', ' + str(self.b) + ', ' + str(self.c) + ')'
