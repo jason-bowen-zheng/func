@@ -1,5 +1,4 @@
-# func/funclib.py
-# func runtime lib
+#!/usr/bin/env python3
 
 import math
 try:
@@ -48,10 +47,10 @@ class core(object):
         print('In', ', '.join([str(item) for item in self.var[name].getq()]), 'quadrants')
 
     def getx(self, name, y):
-        print('x =', self.var[name].getx(y))
+        print('x =', self.var[name].getx(float(y)))
 
     def gety(self, name, x):
-        print('y =', self.var[name].gety(x))
+        print('y =', self.var[name].gety(float(x)))
 
     def ls(self, type_='f'):
         if type_ == 'f':
@@ -197,10 +196,10 @@ class ipf(object):
             return [2, 4]
 
     def getx(self, y):
-        return self.k / float(y)
+        return self.k / y
 
     def gety(self, x):
-        return self.k / float(x)
+        return self.k / x
 
     def plot(self):
         sym.plotting.plot(self.k / var.x)
@@ -258,10 +257,10 @@ class lf(object):
         return quadrant
 
     def getx(self, y):
-        return (float(y) - self.b) / self.k
+        return (y - self.b) / self.k
 
     def gety(self, x):
-        return self.k * float(x) + self.b
+        return self.k * x + self.b
 
     def plot(self):
         sym.plotting.plot(self.k * var.x + self.b)
@@ -297,10 +296,10 @@ class ppf(object):
             return [2, 4]
 
     def getx(self, y):
-        return float(y) / self.k
+        return y / self.k
 
     def gety(self, x):
-        return self.k * float(x)
+        return self.k * x
 
     def plot(self):
         sym.plotting.plot(self.k * var.x)
@@ -336,3 +335,19 @@ class qf(object):
 
     def __str__(self):
         return 'qf(' + str(self.a) + ', ' + str(self.b) + ', ' + str(self.c) + ')'
+
+    def geteq(self):
+        return sym.Eq(self.a * var.x ** 2 + self.b * var.x + self.c, var.y)
+
+    def getx(self, y):
+        return sym.solve(sym.Eq(self.a * var.x ** 2 + self.b * var.x + self.c, y))
+
+    def gety(self, x):
+        return self.a * x ** 2 + self.b * x + self.c
+
+    def plot(self):
+        sym.plotting.plot(self.a * var.x ** 2 + self.b * var.x + self.c)
+
+
+if __name__ == '__main__':
+    core().run()
