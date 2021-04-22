@@ -6,9 +6,9 @@ try:
 except:
     pass
 import shlex
-import string
 import sympy as sym
 import sympy.abc as var
+from sympy.core.numbers import Integer, Float
 import sys
 
 class core(object):
@@ -25,7 +25,7 @@ class core(object):
         self.version = '0.1'
 
     def def_(self, type_, name, *args):
-        if name in string.ascii_letters:
+        if ' ' not in name:
             if type_ in self.function:
                 [float(sym.sympify(item)) for item in args]
                 self.var[name] = self.function[type_](*[sym.sympify(item) for item in args])
@@ -33,7 +33,7 @@ class core(object):
             else:
                 raise TypeError("No function type: '%s'" % type_)
         else:
-            raise TypeError("Invalid name: '%s'" % name)
+            raise TypeError('Invalid name')
 
     def getip(self, f1, f2):
         ans = sym.solve([self.var[f1].geteq(), self.var[f2].geteq()], [var.x, var.y])
@@ -41,7 +41,7 @@ class core(object):
             for item in ans:
                 print(item)
         elif isinstance(ans, dict):
-            print('(' + str(ans[var.x]) + ', ' + str(ans[var.y]) + ')')
+            print('(%s, %s)' % (ans[var.x], ans[var.y]))
 
     def getq(self, name):
         print('In', ', '.join([str(item) for item in self.var[name].getq()]), 'quadrants')
@@ -52,6 +52,16 @@ class core(object):
     def gety(self, name, x):
         print('y =', self.var[name].gety(float(x)))
 
+    def set(self, name, attribute, value):
+        if hasattr(self.var[name], attribute):
+            if isinstance(getattr(self.var[name], attribute), (int, float, Integer, Float)):
+                setattr(self.var[name], attribute, float(value))
+                print(name, '=', self.var[name])
+            else:
+                raise TypeError("Not a number object: '%s'" % attribute)
+        else:
+            raise TypeError("No attribute: '%s'" % attribute)
+
     def ls(self, type_='f'):
         if type_ == 'f':
             i = 1
@@ -61,7 +71,7 @@ class core(object):
         elif type_ == 't':
             i = 1
             for item in self.function:
-                print('%s: %s' % (str(i).rjust(len(str(len(self.function))), ' '), item))
+                print('%s) %s' % (str(i).rjust(len(str(len(self.function))), ' '), item))
                 i += 1
         else:
             raise TypeError("No subcommand : '%s'" % type_)
@@ -97,6 +107,8 @@ class core(object):
                         self.getx(*cmd[1:])
                     elif cmd[0] == 'gety':
                         self.gety(*cmd[1:])
+                    elif cmd[0] == 'set':
+                        self.set(*cmd[1:])
                     elif cmd[0] == 'ls':
                         self.ls(*cmd[1:])
                     elif cmd[0] == 'plot':
@@ -120,16 +132,15 @@ class core(object):
 
     def using(self, lib):
         lib = __import__(lib)
+        count = 0
         for item in [name for name in dir(lib) if not name.startswith('_')]:
             name, f = item, getattr(lib, item)
             if isinstance(f, object):
                 if hasattr(f, 'geteq') and hasattr(f, 'getx') and hasattr(f, 'gety') and hasattr(f, 'plot'):
-                    print("Loading function :'%s'" % name)
                     self.function[name] = f
-                else:
-                    pass
-            else:
-                pass
+                    count += 1
+        else:
+            print('Total load %d functions' % count)
 
 
 class cvf(object):
@@ -145,7 +156,7 @@ class cvf(object):
             raise TypeError("Funcation 'cvf' takes 1 argument but %d given" % len(args))
 
     def __str__(self):
-        return 'cvf(' + str(self.c) + ')'
+        return 'cvf(c=%s)' % self.c
 
     def geteq(self):
         return sym.Eq(self.c, var.y)
@@ -184,7 +195,7 @@ class ipf(object):
             raise TypeError("Function 'ipf' takes 1 to 2 arguments but %d given" % len(args))
 
     def __str__(self):
-        return 'ipf(' + str(self.k) + ')'
+        return 'ipf(k=%s)' % self.k
 
     def geteq(self):
         return sym.Eq(self.k / var.x, var.y)
@@ -229,7 +240,7 @@ class lf(object):
             raise TypeError("Function 'lf' takes 2 or 4 arguments but %d given" % len(args))
     
     def __str__(self):
-        return 'lf(' + str(self.k) + ', ' + str(self.b) +  ')'
+        return 'lf(k=%s, b=%s)' % (self.k, self.b)
 
     def geteq(self):
         return sym.Eq(self.k * var.x + self.b, var.y)
@@ -284,7 +295,7 @@ class ppf(object):
             raise TypeError("Function 'ppf' takes 1 to 2 arguments but %d given" % len(args))
 
     def __str__(self):
-        return 'ppf(' + str(self.k) + ')'
+        return 'ppf(k=%s)' % self.k
 
     def geteq(self):
         return sym.Eq(self.k * var.x, var.y)
@@ -334,7 +345,7 @@ class qf(object):
             raise TypeError("Function 'qf' takes 1, 2, or 3 arguments but %d given" % len(args))
 
     def __str__(self):
-        return 'qf(' + str(self.a) + ', ' + str(self.b) + ', ' + str(self.c) + ')'
+        return 'qf(a=%s, b=%s, c=%s)' % (self.a, self.b, self.c)
 
     def geteq(self):
         return sym.Eq(self.a * var.x ** 2 + self.b * var.x + self.c, var.y)
