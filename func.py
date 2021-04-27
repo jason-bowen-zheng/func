@@ -101,6 +101,7 @@ class core(object):
 
     def run(self):
         print('func %s for %s' % (self.version, sys.platform))
+        print("Type 'usage' for help, 'quit' to exit")
         while True:
             try:
                 cmd = input('>>> ')
