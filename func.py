@@ -11,6 +11,19 @@ import sympy.abc as var
 from sympy.core.numbers import Integer, Float
 import sys
 
+usage_str = {
+        'def': 'Define a function; def <function> <name> [arg...]',
+        'undef': 'Delete functions; undef <name...>',
+        'ls': 'List functions; ls <f|t>',
+        'getx': 'Get x-axis value; getx <name> <y>',
+        'gety': 'Get y-axis value; gety <name> <x>',
+        'getip': 'Get point of intersection; getip <name1> <name2>',
+        'set': 'Set function attributes; set <name>.<attribute> <value>',
+        'using': 'Import extra functions; using <*.py file>',
+        'plot': 'Draw plot; plot <name>'
+    }
+
+
 class core(object):
 
     def __init__(self):
@@ -52,7 +65,11 @@ class core(object):
     def gety(self, name, x):
         print('y =', self.var[name].gety(float(x)))
 
-    def set(self, name, attribute, value):
+    def set(self, attribute, value):
+        if '.' in attribute:
+            name, attribute = attribute.split('.', 1)
+        else:
+            raise TypeError("Use '.'(dot) to split function and attribute")
         if hasattr(self.var[name], attribute):
             if isinstance(getattr(self.var[name], attribute), (int, float, Integer, Float)):
                 setattr(self.var[name], attribute, float(value))
@@ -115,6 +132,8 @@ class core(object):
                         self.plot(*cmd[1:])
                     elif cmd[0] == 'quit':
                         self.quit(*cmd[1:])
+                    elif cmd[0] == 'usage':
+                        self.usage(*cmd[1:])
                     elif cmd[0] == 'undef':
                         self.undef(*cmd[1:])
                     elif cmd[0] == 'using':
@@ -125,6 +144,19 @@ class core(object):
                     print('func: error:', str(err))
                 else:
                     pass
+
+    def usage(self, topic=''):
+        if topic in usage_str:
+            print("Usage on '%s':" % topic)
+            desp, usage = usage_str[topic].split('; ', 1)
+            print('  Description: %s' % desp)
+            print('  Usage      : %s' % usage)
+        elif not topic:
+            print('Usage on all commands:')
+            for cmd, desp in usage_str.items():
+                print('  %s: %s' % (cmd, desp.split('; ')[1]))
+        elif topic not in usage_str:
+            raise TypeError("No usage topic '%s' found" % topic)
 
     def undef(self, *names):
         for name in names:
