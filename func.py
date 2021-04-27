@@ -60,10 +60,10 @@ class core(object):
         print('In', ', '.join([str(item) for item in self.var[name].getq()]), 'quadrants')
 
     def getx(self, name, y):
-        print('x =', self.var[name].getx(float(y)))
+        print('x =', self.var[name].getx(sym.sympify(y)))
 
     def gety(self, name, x):
-        print('y =', self.var[name].gety(float(x)))
+        print('y =', self.var[name].gety(sym.sympify(x)))
 
     def set(self, attribute, value):
         if '.' in attribute:
@@ -72,7 +72,8 @@ class core(object):
             raise TypeError("Use '.'(dot) to split function and attribute")
         if hasattr(self.var[name], attribute):
             if isinstance(getattr(self.var[name], attribute), (int, float, Integer, Float)):
-                setattr(self.var[name], attribute, float(value))
+                float(sym.sympify(value))
+                setattr(self.var[name], attribute, sym.sympify(value))
                 print(name, '=', self.var[name])
             else:
                 raise TypeError("Not a number object: '%s'" % attribute)
@@ -268,7 +269,7 @@ class lf(object):
             if ans[var.k] == 0:
                 raise TypeError("'k' cannot equals to 0")
             else:
-                self.k, self.b = ans[var.k], ans[var.b]
+                self.k, self.b = ans.values()
         else:
             raise TypeError("Function 'lf' takes 2 or 4 arguments but %d given" % len(args))
     
@@ -356,7 +357,7 @@ class qf(object):
         if len(args) == 1:
             if float(args[0]) != 0:
                 self.a = args[0]
-                self.b = self.c = 0.0
+                self.b = self.c = 0
             else:
                 raise TypeError("'a' cannot equals to 0")
         elif len(args) == 2:
@@ -373,9 +374,17 @@ class qf(object):
                 self.c = args[2]
             else:
                 raise TypeError("'a' cannot equals to 0")
-
+        elif len(args) == 6:
+            x1, y1 = args[0], args[1]
+            x2, y2 = args[2], args[3]
+            x3, y3 = args[4], args[5]
+            eq1 = sym.Eq(var.a * x1 ** 2 + var.b * x1 + var.c, y1)
+            eq2 = sym.Eq(var.a * x2 ** 2 + var.b * x2 + var.c, y2)
+            eq3 = sym.Eq(var.a * x3 ** 2 + var.b * x3 + var.c, y3)
+            ans = sym.solve([eq1, eq2, eq3], [var.a, var.b, var.c])
+            self.a, self.b, self.c = ans.values()
         else:
-            raise TypeError("Function 'qf' takes 1, 2, or 3 arguments but %d given" % len(args))
+            raise TypeError("Function 'qf' takes 1, 2, 3 or 6 arguments but %d given" % len(args))
 
     def __str__(self):
         return 'qf(a=%s, b=%s, c=%s)' % (self.a, self.b, self.c)
@@ -384,7 +393,7 @@ class qf(object):
         return sym.Eq(self.a * var.x ** 2 + self.b * var.x + self.c, var.y)
 
     def getx(self, y):
-        return sym.solve(sym.Eq(self.a * var.x ** 2 + self.b * var.x + self.c, y))
+        return sym.solve(sym.Eq(self.a * var.x ** 2 + self.b * var.x + self.c, y), var.x)
 
     def gety(self, x):
         return self.a * x ** 2 + self.b * x + self.c
