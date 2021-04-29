@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import math
+from os import path, linesep
 try:
     import readline
 except:
@@ -12,15 +13,17 @@ from sympy.core.numbers import Integer, Float
 import sys
 
 usage_str = {
-        'def': 'Define a function; def <function> <name> [arg...]',
-        'undef': 'Delete functions; undef <name...>',
-        'ls': 'List functions; ls <f|t>',
-        'getx': 'Get x-axis value; getx <name> <y>',
-        'gety': 'Get y-axis value; gety <name> <x>',
-        'getip': 'Get point of intersection; getip <name1> <name2>',
-        'set': 'Set function attributes; set <name>.<attribute> <value>',
-        'using': 'Import extra functions; using <*.py file>',
-        'plot': 'Draw plot; plot <name>'
+        'def': 'Define a function: def <function> <name> [arg...]',
+        'undef': 'Delete functions: undef <name...>',
+        'ls': 'List functions: ls <f|t>',
+        'getx': 'Get x-axis value: getx <name> <y>',
+        'gety': 'Get y-axis value: gety <name> <x>',
+        'getip': 'Get point of intersection: getip <name1> <name2>',
+        'set': 'Set function attributes: set <name>.<attribute> <value>',
+        'save': 'Save functions to file: save [*.func file]',
+        'load': 'Load functions from file: load [*.func file]',
+        'using': 'Import extra functions: using <*.py file>',
+        'plot': 'Draw plot: plot <name>'
     }
 
 
@@ -80,6 +83,23 @@ class core(object):
         else:
             raise TypeError("No attribute: '%s'" % attribute)
 
+    def save(self, name='default.func'):
+        with open(name, 'w+') as f:
+            for k, v in self.var.items():
+                f.write('%s = %s%s' % (k, v, linesep))
+
+    def load(self, name='default.func'):
+        if path.isfile(name):
+            with open(name, 'r+') as f:
+                for line in f.readlines():
+                    line = line.strip()
+                    type_ = line[line.find('=') + 1: line.find('(')].strip()
+                    name = line[:line.find('=')].strip()
+                    arg = [i[i.find('=') + 1:] for i in [i.strip() for i in line[line.find('(') + 1: -1].split(',')]]
+                    self.def_(type_, name, *arg)
+        else:
+            raise TypeError("File '%s' not found" % name)
+
     def ls(self, type_='f'):
         if type_ == 'f':
             i = 1
@@ -130,6 +150,10 @@ class core(object):
                         self.set(*cmd[1:])
                     elif cmd[0] == 'ls':
                         self.ls(*cmd[1:])
+                    elif cmd[0] == 'save':
+                        self.save(*cmd[1:])
+                    elif cmd[0] == 'load':
+                        self.load(*cmd[1:])
                     elif cmd[0] == 'plot':
                         self.plot(*cmd[1:])
                     elif cmd[0] == 'quit':
@@ -156,7 +180,8 @@ class core(object):
         elif not topic:
             print('Usage on all commands:')
             for cmd, desp in usage_str.items():
-                print('  %s: %s' % (cmd, desp.split('; ')[1]))
+                length = max([len(s) for s in usage_str.keys()])
+                print('  %s: %s' % (cmd + ' ' * (length - len(cmd)), desp.split(': ')[1]))
         elif topic not in usage_str:
             raise TypeError("No usage topic '%s' found" % topic)
 
@@ -178,7 +203,7 @@ class core(object):
 
 
 class cvf(object):
-    #Constant value function
+    # Constant value function
 
     def __init__(self, *args):
         if len(args) == 1:
@@ -393,7 +418,15 @@ class qf(object):
         return sym.Eq(self.a * var.x ** 2 + self.b * var.x + self.c, var.y)
 
     def getx(self, y):
-        return sym.solve(sym.Eq(self.a * var.x ** 2 + self.b * var.x + self.c, y), var.x)
+        delta = self.b ** 2 - 4 * self.a * self.c
+        if delta < 0:
+            return
+        elif delta == 0:
+            return -self.b / (2 * self.a)
+        else:
+            x1 = (-self.b + sym.sqrt(delta)) / (2 * self.a)
+            x2 = (-self.b - sym.sqrt(delta)) / (2 * self.a)
+            return [x1, x2]
 
     def gety(self, x):
         return self.a * x ** 2 + self.b * x + self.c
