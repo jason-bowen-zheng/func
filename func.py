@@ -2,6 +2,7 @@
 
 import math
 from os import path, linesep
+import re
 try:
     import readline
 except:
@@ -41,7 +42,7 @@ class core(object):
         self.version = '0.1'
 
     def def_(self, type_, name, *args):
-        if ' ' not in name:
+        if re.match(r'^[a-zA-Z_][\w\d\S]*$', name) is not None:
             if type_ in self.function:
                 [float(sym.sympify(item)) for item in args]
                 self.var[name] = self.function[type_](*[sym.sympify(item) for item in args])
@@ -49,7 +50,7 @@ class core(object):
             else:
                 raise TypeError("No function type: '%s'" % type_)
         else:
-            raise TypeError('Invalid name')
+            raise TypeError("Invalid name: '%s'" % name)
 
     def getip(self, f1, f2):
         ans = sym.solve([self.var[f1].geteq(), self.var[f2].geteq()], [var.x, var.y])
@@ -84,19 +85,33 @@ class core(object):
             raise TypeError("No attribute: '%s'" % attribute)
 
     def save(self, name='default.func'):
-        with open(name, 'w+') as f:
-            for k, v in self.var.items():
-                f.write('%s = %s%s' % (k, v, linesep))
+        if len(self.var) > 0:
+            with open(name, 'w+') as f:
+                f.write('# generate by func v%s%s' % (self.version, linesep))
+                for k, v in self.var.items():
+                    f.write('%s = %s%s' % (k, v, linesep))
 
     def load(self, name='default.func'):
         if path.isfile(name):
             with open(name, 'r+') as f:
+                count = 0
+                functions = []
                 for line in f.readlines():
+                    count += 1
                     line = line.strip()
-                    type_ = line[line.find('=') + 1: line.find('(')].strip()
-                    name = line[:line.find('=')].strip()
-                    arg = [i[i.find('=') + 1:] for i in [i.strip() for i in line[line.find('(') + 1: -1].split(',')]]
-                    self.def_(type_, name, *arg)
+                    if line and (not line.startswith('#')):
+                        if re.match(r'^[a-zA-z_][\w\d\S]* = (%s)\(.*\)$' % '|'.join(self.function.keys()), line) is not None:
+                            type_ = line[line.find('=') + 1: line.find('(')].strip()
+                            name = line[:line.find('=')].strip()
+                            args = [i[i.find('=') + 1:] for i in [i.strip() for i in line[line.find('(') + 1: -1].split(',')]]
+                            functions.append({'type': type_, 'name': name, 'args': args})
+                        else:
+                            print("File '%s', line %s\n" % (name, count))
+                            print('  %s\n' % line)
+                            raise TypeError('Syntax error')
+                else:
+                    for function in functions:
+                        self.def_(function['type'], function['name'], *function['args'])
         else:
             raise TypeError("File '%s' not found" % name)
 
@@ -172,9 +187,14 @@ class core(object):
                     pass
 
     def usage(self, topic=''):
-        if topic in usage_str:
+        if topic == 'online':
+            print('Usage online')
+            print('Open web browser...')
+            webbrowser = __import__('webbrowser')
+            webbrowser.open_new('https://github.com/jason-bowen-zheng/func/wiki')
+        elif topic in usage_str:
             print("Usage on '%s':" % topic)
-            desp, usage = usage_str[topic].split('; ', 1)
+            desp, usage = usage_str[topic].split(': ', 1)
             print('  Description: %s' % desp)
             print('  Usage      : %s' % usage)
         elif not topic:
